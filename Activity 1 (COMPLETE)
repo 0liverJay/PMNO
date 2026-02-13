@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Thai Consonant Drill</title>
+  <style>
+    :root {
+      --card-w: 420px;
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --btn: #eef2f7;
+      --btn-hover: #e7ecf3;
+      --ok: #16a34a;
+      --bad: #dc2626;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      color: #111827;
+    }
+    .card {
+      width: min(var(--card-w), calc(100vw - 32px));
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.06);
+      padding: 22px 22px 18px;
+      text-align: center;
+    }
+    .hearts {
+      font-size: 18px;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
+    .title {
+      font-weight: 700;
+      margin: 0;
+      font-size: 18px;
+    }
+    .subtitle {
+      margin: 4px 0 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .big {
+      font-size: 92px;
+      line-height: 1;
+      margin: 10px 0 14px;
+    }
+    .buttons {
+      display: grid;
+      gap: 10px;
+      margin: 10px 0 6px;
+    }
+    button {
+      border: 1px solid var(--border);
+      background: var(--btn);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    button:hover { background: var(--btn-hover); }
+    button.primary {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: white;
+      font-weight: 600;
+    }
+    button.primary:hover { background: #1d4ed8; }
+    .result {
+      min-height: 54px;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+    .ok { color: var(--ok); font-weight: 700; }
+    .bad { color: var(--bad); font-weight: 700; }
+    .pronounce {
+      margin-top: 6px;
+      color: #111827;
+      font-size: 14px;
+    }
+    .gameover {
+      margin-top: 6px;
+      color: var(--bad);
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .footer {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="app">
+    <!-- Start Screen -->
+    <div id="startScreen">
+      <h1 class="title" id="teamLine">CSII Team X presents</h1>
+      <div class="subtitle">Thai Consonants</div>
+      <button class="primary" id="startBtn">Start Quiz</button>
+      <div class="footer">3 hearts • 44 consonants</div>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quizScreen" style="display:none;">
+      <div class="hearts" id="hearts"></div>
+      <h2 class="title">Thai Consonant Drill</h2>
+      <div class="big" id="promptChar">ก</div>
+
+      <div class="buttons" id="choices"></div>
+
+      <div class="result" id="resultBox"></div>
+
+      <div class="footer">
+        <span id="progress"></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Update this to your real team name:
+    const TEAM_NAME = "Team X";
+
+    // 44 Thai consonants with common "letter name" (pronunciation)
+    // (Romanization varies; use what your class expects.)
+    const CONSONANTS = [
+      { ch: "ก", name: "gor gai" },
+      { ch: "ข", name: "khor khai" },
+      { ch: "ฃ", name: "khor khuat" },
+      { ch: "ค", name: "khor khwai" },
+      { ch: "ฅ", name: "khor khon" },
+      { ch: "ฆ", name: "khor rakhang" },
+      { ch: "ง", name: "ngor ngu" },
+      { ch: "จ", name: "jor jan" },
+      { ch: "ฉ", name: "chor ching" },
+      { ch: "ช", name: "chor chang" },
+      { ch: "ซ", name: "sor so" },
+      { ch: "ฌ", name: "chor choe" },
+      { ch: "ญ", name: "yor ying" },
+      { ch: "ฎ", name: "dor chada" },
+      { ch: "ฏ", name: "tor patak" },
+      { ch: "ฐ", name: "thor than" },
+      { ch: "ฑ", name: "thor montho" },
+      { ch: "ฒ", name: "thor phuthao" },
+      { ch: "ณ", name: "nor nen" },
+      { ch: "ด", name: "dor dek" },
+      { ch: "ต", name: "tor tao" },
+      { ch: "ถ", name: "thor thung" },
+      { ch: "ท", name: "thor thahan" },
+      { ch: "ธ", name: "thor thong" },
+      { ch: "น", name: "nor nu" },
+      { ch: "บ", name: "bor baimai" },
+      { ch: "ป", name: "por pla" },
+      { ch: "ผ", name: "phor phueng" },
+      { ch: "ฝ", name: "for fa" },
+      { ch: "พ", name: "phor phan" },
+      { ch: "ฟ", name: "for fan" },
+      { ch: "ภ", name: "phor samphao" },
+      { ch: "ม", name: "mor ma" },
+      { ch: "ย", name: "yor yak" },
+      { ch: "ร", name: "ror ruea" },
+      { ch: "ล", name: "lor ling" },
+      { ch: "ว", name: "wor waen" },
+      { ch: "ศ", name: "sor sala" },
+      { ch: "ษ", name: "sor ruesi" },
+      { ch: "ส", name: "sor sua" },
+      { ch: "ห", name: "hor hip" },
+      { ch: "ฬ", name: "lor chula" },
+      { ch: "อ", name: "or ang" },
+      { ch: "ฮ", name: "hor nok-huk" }
+    ];
+
+    // --- State ---
+    let hearts = 3;
+    let asked = 0;
+    let remaining = [];
+    let current = null;
+    let lock = false;
+
+    // --- Elements ---
+    const teamLine = document.getElementById("teamLine");
+    const startScreen = document.getElementById("startScreen");
+    const quizScreen = document.getElementById("quizScreen");
+    const startBtn = document.getElementById("startBtn");
+
+    const heartsEl = document.getElementById("hearts");
+    const promptCharEl = document.getElementById("promptChar");
+    const choicesEl = document.getElementById("choices");
+    const resultBox = document.getElementById("resultBox");
+    const progressEl = document.getElementById("progress");
+
+    // --- Helpers ---
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function renderHearts() {
+      heartsEl.textContent = "❤️".repeat(hearts);
+    }
+
+    function setProgress() {
+      const total = CONSONANTS.length;
+      progressEl.textContent = `Progress: ${asked}/${total}`;
+    }
+
+    function pickNextQuestion() {
+      if (hearts <= 0) return gameOver();
+
+      if (remaining.length === 0) {
+        // Finished all 44
+        resultBox.innerHTML = `<div class="ok">Done!</div><div class="pronounce">You completed all 44 consonants.</div>`;
+        choicesEl.innerHTML = "";
+        return;
+      }
+
+      lock = false;
+      resultBox.innerHTML = "";
+
+      current = remaining.pop();
+      asked += 1;
+      setProgress();
+
+      promptCharEl.textContent = current.ch;
+
+      // Build 3 choices: 1 correct + 2 wrong
+      const wrongPool = CONSONANTS.filter(x => x.ch !== current.ch);
+      const wrongs = shuffle(wrongPool).slice(0, 2);
+
+      const options = shuffle([
+        { label: current.name, correct: true },
+        { label: wrongs[0].name, correct: false },
+        { label: wrongs[1].name, correct: false }
+      ]);
+
+      choicesEl.innerHTML = "";
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.textContent = opt.label;
+        btn.onclick = () => handleAnswer(opt.correct);
+        choicesEl.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(isCorrect) {
+      if (lock) return;
+      lock = true;
+
+      if (isCorrect) {
+        // Show consonant + pronunciation (as in the lab screenshots)
+        resultBox.innerHTML =
+          `<div class="ok">✓ Correct</div>
+           <div class="pronounce">${current.ch} — ${current.name}</div>`;
+        setTimeout(pickNextQuestion, 900);
+      } else {
+        hearts -= 1;
+        renderHearts();
+
+        if (hearts <= 0) {
+          resultBox.innerHTML = `<div class="bad">✗ Incorrect</div>`;
+          setTimeout(gameOver, 700);
+          return;
+        }
+
+        resultBox.innerHTML = `<div class="bad">✗ Incorrect</div>`;
+        setTimeout(pickNextQuestion, 900);
+      }
+    }
+
+    function gameOver() {
+      choicesEl.innerHTML = "";
+      renderHearts();
+
+      resultBox.innerHTML =
+        `<div class="bad">✗ Incorrect</div>
+         <div class="gameover">Game Over</div>
+         <div style="margin-top:10px;">
+           <button class="primary" onclick="restart()">Restart</button>
+         </div>`;
+    }
+
+    function restart() {
+      hearts = 3;
+      asked = 0;
+      remaining = shuffle(CONSONANTS);
+      current = null;
+      lock = false;
+
+      renderHearts();
+      setProgress();
+      pickNextQuestion();
+    }
+
+    function start() {
+      teamLine.textContent = `CSII ${TEAM_NAME} presents`;
+      startScreen.style.display = "none";
+      quizScreen.style.display = "block";
+      restart();
+    }
+
+    // --- Init ---
+    startBtn.addEventListener("click", start);
+    teamLine.textContent = `CSII ${TEAM_NAME} presents`;
+  </script>
+</body>
+</html>
