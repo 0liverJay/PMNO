@@ -1,25 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
+ <!DOCTYPE html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Thai Consonant Drill - TeamAlpha</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Thai Consonant Drill</title>
 </head>
+
 <body>
 
-<div class="container">
-    <div class="hearts" id="hearts">❤️ ❤️ ❤️</div>
+<h2>CSII Team X presents</h2>
 
-    <h1>Thai Consonant Drill</h1>
-    <h2>TeamAlpha</h2>
+<input id="nickname" placeholder="Enter nickname">
+<button onclick="startQuiz()">Start Quiz</button>
 
-    <div class="letter" id="letter">ก</div>
+<h3 id="user"></h3>
 
-    <div id="choices"></div>
+<script>
 
-    <div id="result"></div>
-</div>
+async function startQuiz() {
 
-<script src="script.js"></script>
+    const nickname = document.getElementById("nickname").value;
+
+    const response = await fetch(
+        "https://YOURSITE-service.onrender.com/api/quiz/start",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ nickname: nickname })
+        }
+    );
+
+    const data = await response.json();
+
+    document.getElementById("user").innerText =
+        data.nickname + " — Starts: " + data.starts;
+}
+
+</script>
+
 </body>
 </html>
